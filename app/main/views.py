@@ -131,24 +131,19 @@ def update(service_id, section):
     s3_uploader = S3(
         bucket_name=main.config['S3_DOCUMENT_BUCKET'],
     )
-
     service_data = data_api_client.get_service(service_id)['services']
     posted_data = dict(
         list(request.form.items()) + list(request.files.items())
     )
-
     # Turn responses which have multiple parts into lists
     for key in request.form:
         item_as_list = request.form.getlist(key)
         list_types = ['list', 'checkboxes', 'pricing']
         if content.get_question(key)['type'] in list_types:
             posted_data[key] = item_as_list
-
     form = Validate(content, service_data, posted_data, s3_uploader)
     update = {}
-
     form.validate()
-
     for question_id in form.clean_data:
         if question_id not in form.errors:
             update[question_id] = form.clean_data[question_id]
@@ -162,7 +157,6 @@ def update(service_id, section):
                 "admin app")
         except HTTPError as e:
             return e.message
-
     if form.errors:
         service_data.update(form.dirty_data)
         return render_template("edit_section.html", **get_template_data({
