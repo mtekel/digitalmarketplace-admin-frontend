@@ -1,3 +1,5 @@
+import os
+import json
 from flask import current_app, flash, render_template, request, redirect, \
     session, url_for
 from dmutils.apiclient import HTTPError
@@ -9,6 +11,7 @@ from dmutils.content_loader import ContentLoader
 from dmutils.presenters import Presenters
 from dmutils.s3 import S3
 from .helpers.auth import check_auth, is_authenticated
+from .helpers.diff_tools import StringDiffTool, ListDiffTool
 
 
 content = ContentLoader(
@@ -17,6 +20,47 @@ content = ContentLoader(
 )
 presenters = Presenters()
 
+def make_diffs_from_service_data(
+  sections_to_diff=None, sections=None, revision_1=None, revision_2=None):
+
+  def is_string(value):
+    if type(value).__name__ == 'str' or type(value).__name__ == 'unicode':
+      return True
+    else:
+      return False
+
+  def is_list(value):
+    if type(value).__name__ == 'list':
+      return True
+    else:
+      return False
+
+  diffs = {}
+  for section in sections:
+    if section['name'] in sections_to_diff:
+      section_diffs = {}
+      for question in section['questions']:
+        if revision_1['lot'].lower() in question['depends_on_lots']:
+          question_revision_1 = revision_1[question['id']]
+          question_revision_2 = revision_2[question['id']]
+          if is_string(question_revision_1) and is_string(question_revision_2) :
+            diff = StringDiffTool(question_revision_1, question_revision_2)
+          elif is_list(question_revision_1) and is_list(question_revision_2):
+            diff = ListDiffTool(question_revision_1, question_revision_2)
+          else:
+            continue
+          question_diff = diff.get_rendered_lines()
+          if 'questions' not in section_diffs:
+            section_diffs = { 'questions': [] }
+          section_diffs['questions'].append({
+            'label': question['question'],
+            'revision_1': question_diff['revision_1'],
+            'revision_2': question_diff['revision_2']
+          })
+      if len(section_diffs) > 0:
+        diffs[section['name']] = section_diffs
+            
+  return diffs
 
 @main.route('', methods=['GET'])
 def index():
@@ -123,6 +167,55 @@ def edit(service_id, section):
         "service_data": data_api_client.get_service(service_id)['services'],
     })
     return render_template("edit_section.html", **template_data)
+
+
+@main.route('/services/<service_id>/compare/<revision_1>...<revision_2>', methods=['GET'])
+def review(service_id, revision_1, revision_2):
+    try:
+        service = data_api_client.get_service(service_id)
+        if service is None:
+            flash({'no_service': service_id}, 'error')
+            return redirect(url_for('.index'))
+        service_data = service['services']
+    except HTTPError:
+        flash({'api_error': service_id}, 'error')
+        return redirect(url_for('.index'))
+
+    service_data_revision_1_path = os.path.join(
+      os.path.dirname(__file__),
+      'helpers', 'service_data_revision_1.json')
+    service_data_revision_2_path = os.path.join(
+      os.path.dirname(__file__),
+      'helpers', 'service_data_revision_2.json')
+
+    with open(service_data_revision_1_path, 'r') as file:    
+      service_data_revision_1 = json.load(file)
+    with open(service_data_revision_2_path, 'r') as file:    
+      service_data_revision_2 = json.load(file)
+
+    presented_service_data_revision_1 = {}
+    presented_service_data_revision_2 = {}
+    for key, value in service_data.items():
+        presented_service_data_revision_1[key] = presenters.present(
+            value, content.get_question(key)
+        )
+        presented_service_data_revision_2[key] = presenters.present(
+            value, content.get_question(key)
+        )
+
+    service_diffs = make_diffs_from_service_data(
+      sections_to_diff=['Description', 'Features and benefits'],
+      sections=content.sections,
+      revision_1=presented_service_data_revision_1,
+      revision_2=presented_service_data_revision_2)
+
+    template_data = get_template_data({
+        "diffs": service_diffs,
+        "sections": content.sections,
+        "service_data": presented_service_data_revision_1,
+        "service_id": service_id
+    })
+    return render_template("compare_revisions.html", **template_data)
 
 
 @main.route('/services/<service_id>/edit/<section>', methods=['POST'])
