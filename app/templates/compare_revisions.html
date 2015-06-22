@@ -43,33 +43,91 @@
         </div>
       </div>
 
+      <div class='show-diff'>
+        <h2 class='diff-title'>
+          Service revisions
+        </h2>
+
+        <table>
+          <thead></thead>
+          <tbody>
+            <tr class='head-row'>
+              <td class='line-number' colspan='2'><h3>Original</h3>Tuesday 10 June 2015 14:00</td>
+              <td class='line-number' colspan='2'><h3>Revised</h3>Tuesday 10 June 2015 14:30</td>
+            </tr>
+            <tr class='head-row'>
+              <td colspan="4">
+                <h3>Service Summary</h3>
+              </td>
+            </tr>
+            <tr>
+              <td class='line-number number removed'>1</td>
+              <td class='removed'>
+                <strong>
+                  Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam.
+                </strong>
+              </td>
+              <td class='line-number number added'>1</td>
+              <td class='added'>
+                <strong>
+                  This is a new string, the old string has been replaced. Any resemblance to the original string is coincidental.
+                </strong>
+              </td>
+            </tr>
+            <tr class='head-row'>
+              <td colspan="4">
+                <h3>Features</h3>
+              </td>
+            </tr>
+            <tr>
+              <td class='line-number number removed'>1</td>
+              <td class='removed'>
+                Something removed, but nothing added<strong>!</strong>
+              </td>
+              <td class='line-number number'>1</td>
+              <td class=''>
+                Something removed, but nothing added
+              </td>
+            </tr>
+              <td class='line-number number'>2</td>
+              <td class='removed-detail'>
+                Something added, but nothing removed
+              </td>
+              <td class='line-number number added'>2</td>
+              <td class='added'>
+                Something added, but nothing removed<strong>.</strong>
+              </td>
+            </tr>
+            <tr>
+              <td class='line-number number removed'>7</td>
+              <td class='removed-detail removed'>
+                <strong>Everything removed</strong>
+              </td>
+              <td class='line-number number'>7</td>
+              <td class=''>
+              </td>
+            </tr>
+            <tr class='head-row'>
+              <td colspan="4">
+                <h3>Benefits</h3>
+              </td>
+            </tr>
+            <tr>
+              <td class='line-number number'>2</td>
+              <td class='removed-detail'>
+              </td>
+              <td class='line-number number added'>2</td>
+              <td class='added'>
+                <strong>Something completely new.</strong>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      
+       
       {% for section in sections %}
         {% if section.name in diffs %}
-          <table class="diff">
-            <caption>Changes to {{ section.name }}</caption>
-            <thead>
-              <tr>
-                <th class="line-number"><span class="visuallyhidden">Revision 1 line number</span></th>
-                <th class="line-content"><span class="visuallyhidden">Revision 1 changes</span></th>
-                <th class="line-number"><span class="visuallyhidden">Revision 2 line number</span></th>
-                <th class="line-content"><span class="visuallyhidden">Revision 2 changes</span></th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for question in diffs[section.name].questions %}
-                {% for line in question.revision_1 %}
-                <tr>
-                  {{ line }}
-                </tr>
-                {% endfor %} 
-                {% for line in question.revision_2 %}
-                <tr>
-                  {{ line }}
-                </tr>
-                {% endfor %} 
-              {% endfor %}
-            </tbody>
-          </table>
         {% else %}
           {% if service_data['lot']|lower in section['depends_on_lots'] %}
             <h2 class="summary-item-heading">

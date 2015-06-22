@@ -29,3 +29,63 @@ table.diff {
     }
   }
 }
+
+.show-diff {
+  h2 {
+    @include heading-27;
+    font-weight: bold;
+  }
+
+  table {
+    width: 100%;
+    margin-bottom: $gutter;
+  }
+  td {
+    width: 42%;
+    padding-top: 3px;
+    padding-bottom: 4px;
+    vertical-align: top;
+    border-right: 5px solid white;
+    line-height: 26px;
+  }
+  .head-row {
+    td {
+      padding-top: 10px;
+      padding-bottom: 0px;
+      h3 {
+        display: inline-block;
+        margin-right: 15px;
+        margin-bottom: 5px;
+      }
+    }
+  }
+  .revision-date {
+    padding-top: 0px !important;
+  }
+  .border-bottom {
+    border-bottom: 1px solid #dee0e2;
+  }
+  .line-number {
+    width: 4%;
+    border-right: none;
+    padding-right: 10px;
+  }
+  .number {
+    text-align: right;
+    @include core-19($tabular-numbers: true);
+  }
+  .removed {
+    background-color: rgba(255,0,0,0.1);
+    strong {
+    background-color: rgba(255,0,0,0.25);
+    font-weight: normal;
+    }
+  }
+  .added {
+    background-color: rgba(0,255,0,0.1);
+    strong {
+      background-color: rgba(0,255,0,0.25);
+      font-weight: normal;
+    }
+  }
+}
