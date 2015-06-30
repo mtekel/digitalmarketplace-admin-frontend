@@ -1,7 +1,7 @@
 hooks:
   build:
   - scripts/build.sh
-#healthcheck:
-#  path: /_status
-#  method: GET
-#  status: 200 
+healthcheck:
+  path: /admin/_status
+  method: GET
+  status: 200 
