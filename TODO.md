@@ -1,0 +1,1 @@
+- the authenticated template flag has been removed
