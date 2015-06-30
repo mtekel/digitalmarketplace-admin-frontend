@@ -8,7 +8,7 @@ application = create_app(
     os.getenv('DM_ENVIRONMENT') or 'development'
 )
 manager = Manager(application)
-manager.add_command("runserver", Server(port=5004))
+manager.add_command("runserver", Server(host="0.0.0.0", port=8888))
 
 if __name__ == '__main__':
     manager.run()
