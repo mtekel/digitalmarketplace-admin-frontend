@@ -14,3 +14,6 @@ git+https://github.com/alphagov/digitalmarketplace-utils.git@3.0.0#egg=digitalma
 pyOpenSSL==0.14
 ndg-httpsclient==0.3.3
 pyasn1==0.1.7
+
+# Gunicorn
+gunicorn==19.3.0
