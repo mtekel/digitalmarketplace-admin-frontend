@@ -1,6 +1,7 @@
 from datetime import datetime
 
-from flask import request, render_template, redirect, url_for, session
+from flask import request, render_template, redirect, url_for
+from flask_login import login_required, current_user
 
 from dmutils.audit import AuditTypes
 
@@ -11,6 +12,7 @@ from . import get_template_data
 
 
 @main.route('/service-updates', methods=['GET'])
+@login_required
 def service_update_audits():
     form = ServiceUpdateAuditEventsForm(request.args, csrf_enabled=False)
 
@@ -31,7 +33,7 @@ def service_update_audits():
     else:
         return render_template(
             "service_update_audits.html",
-            today=datetime.now(),
+            today=datetime.utcnow(),
             acknowledged=form.default_acknowledged(),
             audit_events=[],
             form=form,
@@ -39,10 +41,12 @@ def service_update_audits():
 
 
 @main.route('/service-updates/<audit_id>/acknowledge', methods=['POST'])
+@login_required
 def submit_service_update_acknowledgment(audit_id):
     form = ServiceUpdateAuditEventsForm(request.form)
     if form.validate():
-        data_api_client.acknowledge_audit_event(audit_id, session['username'])
+        data_api_client.acknowledge_audit_event(
+            audit_id, current_user.email_address)
         return redirect(
             url_for(
                 '.service_update_audits',
@@ -52,7 +56,7 @@ def submit_service_update_acknowledgment(audit_id):
     else:
         return render_template(
             "service_update_audits.html",
-            today=datetime.now(),
+            today=datetime.utcnow(),
             audit_events=None,
             acknowledged=form.default_acknowledged(),
             form=form,
